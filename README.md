@@ -23,15 +23,36 @@ sudo apt-get install docker-compose
 
 # Setup Portainer 
 
+* Crate compose file `nano docker-compose.yml`
+
 ```
-docker volume create portainer_data
-docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:lts
-docker ps
+version: '3.8'
+
+services:
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: portainer
+    restart: always
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+volumes:
+  portainer_data:
+
 ```
+
+* Deploy portainer `docker stack deploy -c docker-compose.yml portainer`
 
 # Set Admin password on portaienr 
 
 * Visit : https://localhost:9443
+
+![image](https://github.com/user-attachments/assets/ca246617-9a3c-4994-a650-e9ec854b7e91)
+
 
 # Expose Portainer with Loadbalancer 
 
