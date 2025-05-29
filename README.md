@@ -294,6 +294,55 @@ bench --site lms-web.arcapps.org install-app excel_lms
 
 # Configure Loadbalancer for LMS
 
+* `nano /etc/nginx/nginx.conf`
+
+```
+ # Upstream k8s
+    upstream lms_web {
+        server 192.168.10.103:3890 max_fails=1 fail_timeout=30s;
+    }
+
+```
+* ` nano /etc/nginx/sites-available/carepronginx.arcapps.org`
+
+```
+server { 	
+    server_name lms-web.arcapps.org;
+   # Let’s Encrypt challenge support
+    location ^~ /.well-known/acme-challenge/ {
+        default_type "text/plain";
+        root /var/www/html;
+        allow all;
+    }
+	
+    location / {
+        proxy_pass http://lms_web;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host erp.k8s.com; # Force backend to use expected Host
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/lms-web.arcapps.org/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/lms-web.arcapps.org/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+```
+
+* test nginx config `nginx -t`
+* restart nginx `sudo systemctl restart nginx`
+* Access LMS with the doamin `lms-web.arcapps.org`
+
+![image](https://github.com/user-attachments/assets/f0399111-ce4f-4588-b29b-2c142b895b88)
+  
 
  
 
