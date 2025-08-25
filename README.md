@@ -45,6 +45,36 @@ volumes:
 
 ```
 
+# Using Docker swarm 
+
+```
+version: '3.8'
+
+services:
+  portainer:
+    image: portainer/portainer-ce:lts
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    ports:
+      - target: 8000
+        published: 8000
+        protocol: tcp
+        mode: host
+      - target: 9443
+        published: 9443
+        protocol: tcp
+        mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+volumes:
+  portainer_data:
+
+```
+
 * Deploy portainer `docker stack deploy -c docker-compose.yml portainer`
 
 # Set Admin password on portaienr 
